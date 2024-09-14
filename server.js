@@ -1,15 +1,20 @@
-// server.js
 const express = require('express');
 const path = require('path');
+const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware to serve static files
+const userRoutes = require('./routes/userRoutes');
+
+// Middleware to parse request bodies
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Serve static files
 app.use(express.static('public'));
 
-// Import routes
-const indexRoutes = require('./app/routes/index');
-app.use('/', indexRoutes);
+// Use User routes
+app.use('/users', userRoutes);
 
 // Start the server
 app.listen(PORT, () => {

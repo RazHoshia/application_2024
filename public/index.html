@@ -4,9 +4,38 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>User Management</title>
 </head>
 <body>
     <h1>Welcome to Express MVC App!</h1>
+
+    <h2>Create User</h2>
+    <form action="/users/create" method="POST">
+        <label>Email: <input type="email" name="email" required></label><br>
+        <label>Name: <input type="text" name="name" required></label><br>
+        <label>Address: <input type="text" name="address"></label><br>
+        <label>Password: <input type="password" name="password" required></label><br>
+        <label>Is Admin: <input type="checkbox" name="is_admin"></label><br>
+        <button type="submit">Create User</button>
+    </form>
+
+    <h2>Delete User</h2>
+    <form action="/users/delete" method="POST">
+        <label>UUID: <input type="text" name="uuid" required></label><br>
+        <button type="submit">Delete User</button>
+    </form>
+
+    <h2>Search User</h2>
+    <form action="/users/search" method="GET">
+        <label>Attribute: 
+            <select name="attribute">
+                <option value="email">Email</option>
+                <option value="name">Name</option>
+                <option value="uuid">UUID</option>
+            </select>
+        </label><br>
+        <label>Value: <input type="text" name="value" required></label><br>
+        <button type="submit">Search User</button>
+    </form>
 </body>
 </html>

@@ -2,7 +2,7 @@ const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
 
 const connectionURL = 'mongodb://localhost:27017';
-const databaseName = 'haim';
+const databaseName = 'project_db';
 
 let db;
 
@@ -19,4 +19,21 @@ const connectToDB = async () => {
   }
 };
 
-module.exports = { connectToDB };
+// Function to ensure a collection exists; creates it if missing
+const ensureCollectionExists = async (collectionName) => {
+  try {
+    const db = await connectToDB(); // Ensure we have a database connection
+    const collections = await db.listCollections({ name: collectionName }).toArray();
+    if (collections.length === 0) {
+      await db.createCollection(collectionName);
+      console.log(`Collection ${collectionName} created`);
+    } else {
+      console.log(`Collection ${collectionName} already exists`);
+    }
+  } catch (error) {
+    console.error(`Error ensuring collection ${collectionName} exists:`, error);
+    throw error;
+  }
+};
+
+module.exports = { connectToDB, ensureCollectionExists };
