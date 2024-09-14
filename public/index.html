@@ -4,38 +4,47 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management</title>
+    <title>Shop Management</title>
 </head>
 <body>
-    <h1>Welcome to Express MVC App!</h1>
+    <h1>Welcome to Express MVC App - Shop Management!</h1>
 
-    <h2>Create User</h2>
-    <form action="/users/create" method="POST">
-        <label>Email: <input type="email" name="email" required></label><br>
-        <label>Name: <input type="text" name="name" required></label><br>
-        <label>Address: <input type="text" name="address"></label><br>
-        <label>Password: <input type="password" name="password" required></label><br>
-        <label>Is Admin: <input type="checkbox" name="is_admin"></label><br>
-        <button type="submit">Create User</button>
-    </form>
-
-    <h2>Delete User</h2>
-    <form action="/users/delete" method="POST">
+    <h2>Create Shop</h2>
+    <form action="/shops/create" method="POST">
         <label>UUID: <input type="text" name="uuid" required></label><br>
-        <button type="submit">Delete User</button>
+        <label>Address: <input type="text" name="address" required></label><br>
+        <label>Inventory (JSON format): 
+            <textarea name="inventory" placeholder='[{"product_uuid": "product-abc123", "amount_in_stock": 50}]' required></textarea>
+        </label><br>
+        <button type="submit">Create Shop</button>
     </form>
 
-    <h2>Search User</h2>
-    <form action="/users/search" method="GET">
+    <h2>Update Shop</h2>
+    <form action="/shops/update" method="POST">
+        <label>UUID: <input type="text" name="uuid" required></label><br>
+        <label>Address: <input type="text" name="address"></label><br>
+        <label>Inventory (JSON format): 
+            <textarea name="inventory" placeholder='[{"product_uuid": "product-abc123", "amount_in_stock": 50}]'></textarea>
+        </label><br>
+        <button type="submit">Update Shop</button>
+    </form>
+
+    <h2>Delete Shop</h2>
+    <form action="/shops/delete" method="POST">
+        <label>UUID: <input type="text" name="uuid" required></label><br>
+        <button type="submit">Delete Shop</button>
+    </form>
+
+    <h2>Search Shop</h2>
+    <form action="/shops/search" method="GET">
         <label>Attribute: 
             <select name="attribute">
-                <option value="email">Email</option>
-                <option value="name">Name</option>
                 <option value="uuid">UUID</option>
+                <option value="address">Address</option>
             </select>
         </label><br>
         <label>Value: <input type="text" name="value" required></label><br>
-        <button type="submit">Search User</button>
+        <button type="submit">Search Shop</button>
     </form>
 </body>
 </html>

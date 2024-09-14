@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const userRoutes = require('./routes/userRoutes');
+const shopRoutes = require('./routes/shopRoutes'); // Updated to use shop routes
 
 // Middleware to parse request bodies
 app.use(bodyParser.json());
@@ -13,8 +13,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files
 app.use(express.static('public'));
 
-// Use User routes
-app.use('/users', userRoutes);
+// Use Shop routes
+app.use('/shops', shopRoutes); // Updated to use shop routes
 
 // Start the server
 app.listen(PORT, () => {
