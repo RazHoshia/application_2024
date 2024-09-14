@@ -8,7 +8,9 @@ const userRoutes = require('./routes/userRoutes');
 const shopRoutes = require('./routes/shopRoutes');
 const userAuthRoutes = require('./routes/userAuthRoutes');
 const cartManagerRoutes = require('./routes/cartManagerRoutes');
-const paymentRoutes = require('./routes/paymentRoutes'); // Add payment routes
+const paymentRoutes = require('./routes/paymentRoutes');
+const personalAccountRoutes = require('./routes/personalAccountRoutes');
+const productRoutes = require('./routes/productRoutes'); 
 
 // Middleware to parse request bodies
 app.use(bodyParser.json());
@@ -22,7 +24,9 @@ app.use('/users', userRoutes);
 app.use('/shops', shopRoutes);
 app.use('/auth', userAuthRoutes);
 app.use('/cart', cartManagerRoutes);
-app.use('/payment', paymentRoutes); // Include payment routes
+app.use('/payment', paymentRoutes);
+app.use('/personal', personalAccountRoutes);
+app.use('/products', productRoutes); // Correctly include product routes
 
 // Serve the main HTML file
 app.get('/', (req, res) => {
