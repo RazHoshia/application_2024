@@ -4,67 +4,170 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User and Shop Management</title>
+    <title>User and Cart Management</title>
+    <script>
+        // Function to handle login
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('user_id', result.user.uuid);
+                    alert('Login successful');
+                    displayCartOptions();
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                console.error('Error logging in:', error);
+            }
+        }
+
+        // Function to handle signup
+        async function handleSignup(event) {
+            event.preventDefault();
+            const email = document.getElementById('signupEmail').value;
+            const name = document.getElementById('signupName').value;
+            const address = document.getElementById('signupAddress').value;
+            const password = document.getElementById('signupPassword').value;
+            const isAdmin = document.getElementById('signupIsAdmin').checked;
+
+            try {
+                const response = await fetch('/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, name, address, password, is_admin: isAdmin })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('user_id', result.user.uuid);
+                    alert('Signup successful');
+                    displayCartOptions();
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                console.error('Error signing up:', error);
+            }
+        }
+
+        // Function to add product to cart
+        async function addToCart(event) {
+            event.preventDefault();
+            const userId = localStorage.getItem('user_id');
+            const productId = document.getElementById('productToAdd').value;
+
+            try {
+                const response = await fetch(`/cart/add_to_cart?user_id=${userId}&product_id=${productId}`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Product added to cart');
+                    getCart(); // Refresh cart display
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+            }
+        }
+
+        // Function to remove product from cart
+        async function removeFromCart(event) {
+            event.preventDefault();
+            const userId = localStorage.getItem('user_id');
+            const productId = document.getElementById('productToRemove').value;
+
+            try {
+                const response = await fetch(`/cart/remove_from_cart?user_id=${userId}&product_id=${productId}`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Product removed from cart');
+                    getCart(); // Refresh cart display
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                console.error('Error removing from cart:', error);
+            }
+        }
+
+        // Function to get and display cart
+        async function getCart() {
+            const userId = localStorage.getItem('user_id');
+
+            try {
+                const response = await fetch(`/cart/get_cart?user_id=${userId}`);
+                const result = await response.json();
+                if (response.ok) {
+                    document.getElementById('cartContents').textContent = JSON.stringify(result.cart.products, null, 2);
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                console.error('Error getting cart:', error);
+            }
+        }
+
+        // Display cart options after login/signup
+        function displayCartOptions() {
+            document.getElementById('cartManagement').style.display = 'block';
+            getCart(); // Fetch current cart
+        }
+    </script>
 </head>
 <body>
-    <h1>Welcome to Express MVC App!</h1>
+    <h1>User and Cart Management</h1>
 
-    <!-- Signup Form -->
-    <h2>Signup</h2>
-    <form action="/auth/signup" method="POST">
-        <label>Email: <input type="email" name="email" required></label><br>
-        <label>Name: <input type="text" name="name" required></label><br>
-        <label>Address: <input type="text" name="address"></label><br>
-        <label>Password: <input type="password" name="password" required></label><br>
-        <label>Is Admin: <input type="checkbox" name="is_admin"></label><br>
-        <button type="submit">Signup</button>
-    </form>
-
-    <!-- Login Form -->
     <h2>Login</h2>
-    <form action="/auth/login" method="POST">
-        <label>Email: <input type="email" name="email" required></label><br>
-        <label>Password: <input type="password" name="password" required></label><br>
+    <form onsubmit="handleLogin(event)">
+        <label>Email: <input type="email" id="loginEmail" required></label><br>
+        <label>Password: <input type="password" id="loginPassword" required></label><br>
         <button type="submit">Login</button>
     </form>
 
-    <!-- Shop Management Forms (from previous changes) -->
-    <h2>Create Shop</h2>
-    <form action="/shops/create" method="POST">
-        <label>UUID: <input type="text" name="uuid" required></label><br>
-        <label>Address: <input type="text" name="address" required></label><br>
-        <label>Inventory (JSON format): 
-            <textarea name="inventory" placeholder='[{"product_uuid": "product-abc123", "amount_in_stock": 50}]' required></textarea>
-        </label><br>
-        <button type="submit">Create Shop</button>
+    <h2>Signup</h2>
+    <form onsubmit="handleSignup(event)">
+        <label>Email: <input type="email" id="signupEmail" required></label><br>
+        <label>Name: <input type="text" id="signupName" required></label><br>
+        <label>Address: <input type="text" id="signupAddress"></label><br>
+        <label>Password: <input type="password" id="signupPassword" required></label><br>
+        <label>Is Admin: <input type="checkbox" id="signupIsAdmin"></label><br>
+        <button type="submit">Signup</button>
     </form>
 
-    <h2>Update Shop</h2>
-    <form action="/shops/update" method="POST">
-        <label>UUID: <input type="text" name="uuid" required></label><br>
-        <label>Address: <input type="text" name="address"></label><br>
-        <label>Inventory (JSON format): 
-            <textarea name="inventory" placeholder='[{"product_uuid": "product-abc123", "amount_in_stock": 50}]'></textarea>
-        </label><br>
-        <button type="submit">Update Shop</button>
-    </form>
+    <div id="cartManagement" style="display:none;">
+        <h2>Manage Your Cart</h2>
 
-    <h2>Delete Shop</h2>
-    <form action="/shops/delete" method="POST">
-        <label>UUID: <input type="text" name="uuid" required></label><br>
-        <button type="submit">Delete Shop</button>
-    </form>
+        <h3>Add Product to Cart</h3>
+        <form onsubmit="addToCart(event)">
+            <label>Product ID: <input type="text" id="productToAdd" required></label><br>
+            <button type="submit">Add to Cart</button>
+        </form>
 
-    <h2>Search Shop</h2>
-    <form action="/shops/search" method="GET">
-        <label>Attribute: 
-            <select name="attribute">
-                <option value="uuid">UUID</option>
-                <option value="address">Address</option>
-            </select>
-        </label><br>
-        <label>Value: <input type="text" name="value" required></label><br>
-        <button type="submit">Search Shop</button>
-    </form>
+        <h3>Remove Product from Cart</h3>
+        <form onsubmit="removeFromCart(event)">
+            <label>Product ID: <input type="text" id="productToRemove" required></label><br>
+            <button type="submit">Remove from Cart</button>
+        </form>
+
+        <h3>Current Cart Contents</h3>
+        <pre id="cartContents">Your cart is empty.</pre>
+    </div>
 </body>
 </html>
