@@ -8,7 +8,7 @@ class PaymentController {
   // User pay function
   async userPay(req, res) {
     try {
-      const { cart_id } = req.body;
+      const { cart_id, shipping_address } = req.body;
 
       // Fetch the user's cart
       const cart = await Cart.search('uuid', cart_id);
@@ -25,31 +25,41 @@ class PaymentController {
       const userShop = shop[0];
 
       // Validate and update stock for each product in the cart
-      for (const item of userCart.products) {
-        const product = await Product.search('uuid', item.product_id);
+      for (const [product_id, quantity] of Object.entries(userCart.products)) {
+        // Fetch the product from the Product model
+        const product = await Product.search('uuid', product_id);
         if (product.length === 0) {
-          return res.status(404).json({ error: `Product ${item.product_id} not found` });
+          return res.status(404).json({ error: `Product ${product_id} not found` });
         }
 
-        // Find the product in the shop inventory
-        const inventoryItem = userShop.inventory.find(p => p.product_uuid === item.product_id);
-        if (!inventoryItem || inventoryItem.amount_in_stock <= 0) {
-          return res.status(400).json({ error: `Product ${item.product_id} is out of stock` });
+        // Find the inventory item in the shop's inventory
+        const inventoryItem = userShop.inventory[product_id];
+        if (!inventoryItem || inventoryItem.quantity < quantity) {
+          return res.status(400).json({ error: `Insufficient stock for product ${product_id}` });
         }
 
-        // Decrease the stock amount
-        inventoryItem.amount_in_stock -= 1;
+        // Decrease the stock amount in the shop's inventory
+        inventoryItem.quantity -= quantity;
+
+        // Update the specific product quantity in the shop's inventory in the database
+        await Shop.update(
+          { uuid: userShop.uuid, [`inventory.${product_id}`]: { $exists: true } },
+          { $set: { [`inventory.${product_id}.quantity`]: inventoryItem.quantity } }
+        );
+
+        // Update amount_sold for the product in the general Product model
+        await Product.update(
+          { uuid: product_id },
+          { $inc: { amount_sold: quantity } } // Increment the amount sold by the quantity purchased
+        );
       }
-
-      // Update the shop inventory in the database
-      await Shop.update({ uuid: userShop.uuid }, { inventory: userShop.inventory });
 
       // Create an order with the details of the purchase and set initial status to 'ordered'
       const newOrder = {
         uuid: uuidv4(),
         user: userCart.user,
         products: userCart.products,
-        address: userCart.user.address, // Assuming the address is tied to the user
+        address: shipping_address, // Use the provided shipping address
         date: new Date().toISOString(),
         shop: userShop.uuid,
         status: 'ordered' // Initial status
@@ -57,10 +67,11 @@ class PaymentController {
       const createdOrder = await Order.create(newOrder);
 
       // Empty the user's cart
-      await Cart.update({ uuid: userCart.uuid }, { products: [] });
+      await Cart.update({ uuid: userCart.uuid }, { $set: { products: {} } });
 
       res.status(200).json({ message: 'Payment successful', order_id: createdOrder.uuid });
     } catch (error) {
+      console.error(`Error processing payment: ${error.message}`);
       res.status(400).json({ error: error.message });
     }
   }

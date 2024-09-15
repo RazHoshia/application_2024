@@ -38,23 +38,25 @@ class AbstractModel {
     }
   }
 
-  // Update an existing document by filter
-  async update(filter, update) {
-    await this.init(); // Ensure collection is initialized
-    try {
-      const result = await this.collection.updateOne(filter, { $set: update });
-      if (result.modifiedCount > 0) {
-        console.log(`Document updated with filter: ${JSON.stringify(filter)}`);
-        return true; // Return success
-      } else {
-        console.log('No documents matched the filter for update.');
-        return false; // Return failure
-      }
-    } catch (error) {
-      console.error(`Error updating document in ${this.collectionName}:`, error);
-      throw error;
+// Update an existing document by filter
+async update(filter, update) {
+  await this.init(); // Ensure collection is initialized
+  try {
+    // Apply the update object directly, which allows for operators like $inc, $set, $push, etc.
+    const result = await this.collection.updateOne(filter, update);
+
+    if (result.modifiedCount > 0) {
+      console.log(`Document updated with filter: ${JSON.stringify(filter)}`);
+      return true; // Return success
+    } else {
+      console.log('No documents matched the filter for update.');
+      return false; // Return failure
     }
+  } catch (error) {
+    console.error(`Error updating document in ${this.collectionName}:`, error);
+    throw error;
   }
+}
 
   // Delete a document by filter
   async delete(filter) {
