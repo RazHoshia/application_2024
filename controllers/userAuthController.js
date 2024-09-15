@@ -11,7 +11,7 @@ class UserAuthController {
       const existingUsers = await User.search('email', email);
       if (existingUsers.length > 0) {
         console.log('Email already in use', email)
-        return res.status(400).json({ error: 'Email already in use' });
+        return res.status(409).json({ error: 'Email already in use' });
       }
 
       // Create a new user object with plain text password (insecure)
@@ -40,12 +40,12 @@ class UserAuthController {
       // Check if the user exists
       const user = await User.search('email', email);
       if (user.length === 0) {
-        return res.status(400).json({ error: 'User not found' });
+        return res.status(401).json({ error: 'User not found' });
       }
 
       // Check the password (plain text comparison)
       if (user[0].password !== password) {
-        return res.status(400).json({ error: 'Invalid password' });
+        return res.status(401).json({ error: 'Invalid password' });
       }
 
       res.status(200).json({ message: 'Login successful', user: user[0] });

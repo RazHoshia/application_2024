@@ -1,6 +1,3 @@
-# MongoDB Setup
-
-
 # Server Setup
 
 This section provides instructions for setting up the server with Node.js and Express.
