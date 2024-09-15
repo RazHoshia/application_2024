@@ -1,3 +1,5 @@
+script_test/venv
+script_test/.idea
 .DS_Store
 # Logs
 logs

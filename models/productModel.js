@@ -1,3 +1,4 @@
+// productModel.js
 const AbstractModel = require('./abstractModel');
 
 class Product extends AbstractModel {
@@ -7,14 +8,15 @@ class Product extends AbstractModel {
 
   // Basic validation to check fields and types
   validateProduct(product) {
-    const validAttributes = ['uuid', 'name', 'description', 'image', 'price', 'amount_sold'];
+    const validAttributes = ['uuid', 'name', 'description', 'image', 'price', 'amount_sold', 'supplier'];
     const requiredAttributes = {
       uuid: 'string',
       name: 'string',
       description: 'string',
       image: 'string', // Assuming base64 encoded string
       price: 'number',
-      amount_sold: 'number'
+      amount_sold: 'number',
+      supplier: 'string' // UUID of the supplier
     };
 
     // Check for missing fields
@@ -39,6 +41,17 @@ class Product extends AbstractModel {
     // Validate product attributes
     this.validateProduct(product);
     return super.create(product); // Use the inherited create method
+  }
+
+  async update(filter, update) {
+    // If the update includes product attributes, validate them
+    if (update.$set) {
+      const errors = this.validateProduct(update.$set);
+      if (errors.length > 0) {
+        throw new Error(`Validation errors: ${errors.join(', ')}`);
+      }
+    }
+    return super.update(filter, update);
   }
 }
 

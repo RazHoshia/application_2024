@@ -12,6 +12,7 @@ const cartRoutes = require('./routes/cartRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const personalAccountRoutes = require('./routes/personalAccountRoutes');
 const productRoutes = require('./routes/productRoutes'); 
+const supplierRoutes = require('./routes/supplierRoutes');
 
 
 // Middleware to parse request bodies
@@ -30,6 +31,7 @@ app.use('/cart-manager', cartManagerRoutes);
 app.use('/payment', paymentRoutes);
 app.use('/personal', personalAccountRoutes);
 app.use('/products', productRoutes);
+app.use('/suppliers', supplierRoutes);
 
 // Serve the main HTML file
 app.get('/', (req, res) => {
