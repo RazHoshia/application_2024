@@ -25,25 +25,23 @@ router.get('/top_best_sellers', async (req, res) => {
   }
 });
 
-// Route to get average spend per user
-router.get('/average_spend_per_user', async (req, res) => {
+// Route to get revenue grouped by a specified attribute within a given time range
+router.get('/revenue_by_attribute', async (req, res) => {
   try {
-    const averageSpend = await BIModel.getAverageSpendPerUser();
-    res.status(200).json(averageSpend);
-  } catch (error) {
-    console.error('Error fetching average spend per user:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+    // Extract query parameters: attribute, startDate, endDate
+    const { attribute, startDate, endDate } = req.query;
+    // Validate required parameters
+    if (!attribute || !startDate || !endDate) {
+      return res.status(400).json({ error: 'Missing required parameters: attribute, startDate, and endDate' });
+    }
 
-// Route to get revenue from a shop within a given time range
-router.get('/revenue_from_shop', async (req, res) => {
-  try {
-    const { shop_id, start_date, end_date } = req.query; // Get parameters from query
-    const revenue = await BIModel.getRevenueFromShop(shop_id, start_date, end_date);
-    res.status(200).json(revenue);
+    // Call the model function with the provided parameters
+    const result = await BIModel.getRevenueByAttribute(attribute, startDate, endDate);
+    
+    // Return the result
+    res.status(200).json(result);
   } catch (error) {
-    console.error('Error fetching revenue from shop:', error);
+    console.error('Error fetching revenue by attribute:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

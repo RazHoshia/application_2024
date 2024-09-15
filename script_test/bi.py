@@ -30,31 +30,24 @@ def test_top_best_sellers(n):
     except Exception as e:
         logging.error(f"Error in Top {n} Best Sellers: {e}")
 
-def test_average_spend_per_user():
-    logging.info("Testing Average Spend per User...")
-    try:
-        result = get('/average_spend_per_user')
-        logging.info(f"Average Spend per User: {result}")
-    except Exception as e:
-        logging.error(f"Error in Average Spend per User: {e}")
-
-def test_revenue_from_shop(shop_id, start_date, end_date):
-    logging.info(f"Testing Revenue from Shop {shop_id} between {start_date} and {end_date}...")
+def test_revenue_by_attribute(attribute, start_date, end_date):
+    logging.info(f"Testing Revenue by {attribute} between {start_date} and {end_date}...")
     try:
         params = {
-            'shop_id': shop_id,
-            'start_date': start_date,
-            'end_date': end_date
+            'attribute': attribute,
+            'startDate': start_date,
+            'endDate': end_date
         }
-        result = get('/revenue_from_shop', params=params)
-        logging.info(f"Revenue from Shop {shop_id}: {result}")
+        result = get('/revenue_by_attribute', params=params)
+        logging.info(f"Revenue by {attribute}: {result}")
     except Exception as e:
-        logging.error(f"Error in Revenue from Shop {shop_id}: {e}")
-
+        logging.error(f"Error in Revenue by {attribute}: {e}")
 
 if __name__ == "__main__":
     # Run the tests
     test_sales_analysis_by_supplier()
     test_top_best_sellers(1)
-    test_average_spend_per_user()
-    test_revenue_from_shop('shop-uuid-001', '2024-01-01', '2024-12-31')  # Example date range
+    # Use 'user' as the attribute to get average spend per user
+    test_revenue_by_attribute('user', '2024-01-01', '2024-12-31')
+    # Use 'shop' as the attribute to get revenue by shop
+    test_revenue_by_attribute('shop', '2024-01-01', '2024-12-31')  # Example date range

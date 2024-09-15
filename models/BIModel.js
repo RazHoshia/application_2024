@@ -84,66 +84,44 @@ class BIModel {
     }
   }
 
-  // Get average spend per user
-  async getAverageSpendPerUser() {
+  // Get revenue grouped by a dynamic attribute and filter by date using JavaScript
+  async getRevenueByAttribute(attribute, startDate, endDate) {
     await this.init(); // Ensure database is initialized
     try {
-      const result = await this.db.collection('orders').aggregate([
+      // Step 1: Fetch all orders with the specified attribute
+      const orders = await this.db.collection('orders').aggregate([
         {
           $group: {
-            _id: "$user", // Group by user UUID
-            totalSpent: { $sum: "$total_amount" } // Sum of total_amount per user
-          }
-        },
-        {
-          $lookup: {
-            from: "users", // Join with users collection
-            localField: "_id",
-            foreignField: "uuid",
-            as: "userDetails"
-          }
-        },
-        {
-          $unwind: "$userDetails" // Unwind the user details
-        },
-        {
-          $project: {
-            _id: 0,
-            userName: "$userDetails.name", // Include user name
-            totalSpent: 1
+            _id: `$${attribute}`, // Group by the specified attribute dynamically
+            orders: { $push: "$$ROOT" } // Push the entire order document into an array
           }
         }
       ]).toArray();
 
-      return result;
-    } catch (error) {
-      console.error('Error calculating average spend per user:', error);
-      throw error;
-    }
-  }
+      // Step 2: Convert startDate and endDate to Date objects
+      const start = new Date(startDate);
+      const end = new Date(endDate);
 
-  // Get revenue from a shop within a given time range
-  async getRevenueFromShop(shopId, startDate, endDate) {
-    await this.init(); // Ensure database is initialized
-    try {
-      const result = await this.db.collection('orders').aggregate([
-        {
-          $match: {
-            shop: shopId, // Filter by shop ID
-            date: { $gte: new Date(startDate), $lte: new Date(endDate) } // Filter by date range
-          }
-        },
-        {
-          $group: {
-            _id: "$shop",
-            totalRevenue: { $sum: "$total_amount" } // Sum of total_amount per shop
-          }
-        }
-      ]).toArray();
+      // Step 3: Filter orders by date in JavaScript
+      const filteredResults = orders.map(group => {
+        // Filter the orders array by the date range
+        const filteredOrders = group.orders.filter(order => {
+          const orderDate = new Date(order.date);
+          return orderDate >= start && orderDate <= end;
+        });
 
-      return result;
+        // Calculate total revenue for the filtered orders
+        const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.price, 0);
+
+        return {
+          attributeValue: group._id, // Include the value of the grouped attribute
+          totalRevenue // Include the total revenue
+        };
+      }).filter(group => group.totalRevenue > 0); // Only include groups with revenue
+
+      return filteredResults;
     } catch (error) {
-      console.error('Error calculating revenue from shop:', error);
+      console.error(`Error calculating revenue by ${attribute}:`, error);
       throw error;
     }
   }
