@@ -15,10 +15,16 @@ const productRoutes = require('./routes/productRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
 const biRoutes = require('./routes/biRoutes');
 
-
 // Middleware to parse request bodies
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Debug middleware to log incoming requests
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
+  console.log('Request body:', req.body); // Log the body to debug empty query issues
+  next();
+});
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));

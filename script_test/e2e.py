@@ -42,26 +42,24 @@ logging.info(f"Selected shop: {shop['name']}")
 logging.info("Searching user carts...")
 cart = get("/cart-manager/get_cart", params={"user_id": user['user']['uuid'], "shop_id": shop_uuid})
 
-
 # Step 6: Add first two existing products to the cart using add_to_cart endpoint
 logging.info("Adding products to the cart...")
 inventory = shop["inventory"]
 product_uuids = list(inventory.keys())[:2]  # Take the first two products
 for product_uuid in product_uuids:
-    add_to_cart_params = {
-        "user_id": user['user']['uuid'],
+    add_to_cart_data = {
         "product_id": product_uuid,
-        "shop_id": shop_uuid
+        "cart_id": cart['cart']['uuid']
     }
-    post("/cart-manager/add_to_cart", add_to_cart_params)
+    post("/cart-manager/add_to_cart", add_to_cart_data)
 
 # Step 7: Remove one of the products from the cart using remove_from_cart endpoint
 logging.info("Removing one product from the cart...")
-remove_product_params = {
-    "user_id": user['user']['uuid'],
+remove_product_data = {
+    "cart_id": cart['cart']['uuid'],
     "product_id": product_uuids[0]  # Remove one of the first product
 }
-post("/cart-manager/remove_from_cart", remove_product_params)
+post("/cart-manager/remove_from_cart", remove_product_data)
 
 # Step 8: Proceed to user payment
 logging.info("Proceeding to payment...")
