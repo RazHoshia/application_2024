@@ -14,13 +14,6 @@ def post(endpoint, data):
     logging.debug(f"POST {endpoint} - {response.json()}")
     return response.json()
 
-# Helper function to make PUT requests
-def put(endpoint, data):
-    response = requests.put(f"{BASE_URL}{endpoint}", json=data)
-    response.raise_for_status()  # Raise an error for bad responses
-    logging.debug(f"PUT {endpoint} - {response.json()}")
-    return response.json()
-
 # Helper function to make GET requests
 def get(endpoint, params=None):
     response = requests.get(f"{BASE_URL}{endpoint}", params=params)
@@ -28,17 +21,13 @@ def get(endpoint, params=None):
     logging.debug(f"GET {endpoint} - {response.json()}")
     return response.json()
 
-# Step 1: Sign up
-user_data = {
-    "name": "r",
+# Step 1: Log in the user (assume the user already exists)
+login_data = {
     "email": "r@r.com",
-    "password": "r",
-    "uuid": "123e4567-e89b-12d3-a456-426614174000",
-    "address": "123 Example Street, Example City",
-    "is_admin": False
+    "password": "r"
 }
-logging.info("Signing up user...")
-user = post("/users/create", user_data)
+logging.info("Logging in the user...")
+user = post("/auth/login", login_data)
 
 # Step 2: List all shops
 logging.info("Listing all shops...")
@@ -51,48 +40,35 @@ logging.info(f"Selected shop: {shop['name']}")
 
 # Step 4: Search user carts
 logging.info("Searching user carts...")
-carts = get("/carts/search", params={"attribute": "user", "value": user["uuid"]})
+cart = get("/cart-manager/get_cart", params={"user_id": user['user']['uuid'], "shop_id": shop_uuid})
 
-# Step 5: Create a cart if one does not exist for that user and shop
-if not carts:
-    logging.info("No carts found, creating a new cart...")
-    cart_data = {
-        "uuid": "cart-uuid-001",
-        "user": user["uuid"],
-        "shop": shop_uuid,
-        "products": {}  # Initially empty cart
-    }
-    cart = post("/carts/create", cart_data)
-else:
-    cart = carts[0]
-    logging.info(f"Using existing cart: {cart['uuid']}")
 
-# Step 6: Add first two existing products to the cart
+# Step 6: Add first two existing products to the cart using add_to_cart endpoint
 logging.info("Adding products to the cart...")
 inventory = shop["inventory"]
 product_uuids = list(inventory.keys())[:2]  # Take the first two products
 for product_uuid in product_uuids:
-    cart_update = {
-        "filter": {"uuid": cart["uuid"]},
-        "update": {"$inc": {f"products.{product_uuid}": 1}}  # Add one of each product
+    add_to_cart_params = {
+        "user_id": user['user']['uuid'],
+        "product_id": product_uuid,
+        "shop_id": shop_uuid
     }
-    put("/carts/update", cart_update)  # Corrected to use PUT method
+    post("/cart-manager/add_to_cart", add_to_cart_params)
 
-# Step 7: Remove one of the products from the cart
+# Step 7: Remove one of the products from the cart using remove_from_cart endpoint
 logging.info("Removing one product from the cart...")
-remove_product_uuid = product_uuids[0]
-cart_update = {
-    "filter": {"uuid": cart["uuid"]},
-    "update": {"$inc": {f"products.{remove_product_uuid}": -1}}  # Remove one of the first product
+remove_product_params = {
+    "user_id": user['user']['uuid'],
+    "product_id": product_uuids[0]  # Remove one of the first product
 }
-put("/carts/update", cart_update)  # Corrected to use PUT method
+post("/cart-manager/remove_from_cart", remove_product_params)
 
 # Step 8: Proceed to user payment
 logging.info("Proceeding to payment...")
 
 # Only send cart_id as required by your PaymentController
 payment_data = {
-    "cart_id": cart["uuid"],  # Sending only the cart ID as per your PaymentController's requirement
+    "cart_id": cart['cart']['uuid'],  # Sending only the cart ID as per your PaymentController's requirement
     "shipping_address": "456 New Address, New City, Country"  # Example shipping address
 }
 
