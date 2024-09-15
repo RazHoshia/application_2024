@@ -13,6 +13,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const personalAccountRoutes = require('./routes/personalAccountRoutes');
 const productRoutes = require('./routes/productRoutes'); 
 const supplierRoutes = require('./routes/supplierRoutes');
+const biRoutes = require('./routes/biRoutes');
 
 
 // Middleware to parse request bodies
@@ -23,6 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Use routes
+app.use('/bi', biRoutes);
 app.use('/users', userRoutes);
 app.use('/shops', shopRoutes);
 app.use('/auth', userAuthRoutes);
