@@ -7,7 +7,7 @@ class Order extends AbstractModel {
 
   // Basic validation to check fields and types
   validateOrder(order) {
-    const validAttributes = ['uuid', 'user', 'products', 'address', 'date', 'shop', 'status'];
+    const validAttributes = ['uuid', 'user', 'products', 'address', 'date', 'shop', 'status', 'price'];
     const requiredAttributes = {
       uuid: 'string',
       user: 'string',
@@ -15,7 +15,8 @@ class Order extends AbstractModel {
       address: 'string',
       date: 'string',
       shop: 'string',
-      status: 'string'
+      status: 'string',
+      price: 'number'
     };
 
     // Allowed status values

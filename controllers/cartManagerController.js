@@ -29,7 +29,6 @@ class CartManagerController {
       } else {
         cart.products[product_id] = 1; // Add new product with quantity 1
       }
-      
 
       await Cart.update({ uuid: cart.uuid }, { $set: { products: cart.products } });
 

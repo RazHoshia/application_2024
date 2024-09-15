@@ -1,7 +1,7 @@
 const Cart = require('../models/cartModel');
 const Product = require('../models/productModel');
 const Shop = require('../models/shopModel');
-const Order = require('../models/orderModel'); // Assuming there's an Order model
+const Order = require('../models/orderModel');
 const { v4: uuidv4 } = require('uuid');
 
 class PaymentController {
@@ -24,6 +24,8 @@ class PaymentController {
       }
       const userShop = shop[0];
 
+      let totalPrice = 0; // Initialize total price
+
       // Validate and update stock for each product in the cart
       for (const [product_id, quantity] of Object.entries(userCart.products)) {
         // Fetch the product from the Product model
@@ -31,6 +33,7 @@ class PaymentController {
         if (product.length === 0) {
           return res.status(404).json({ error: `Product ${product_id} not found` });
         }
+        const productDetails = product[0];
 
         // Find the inventory item in the shop's inventory
         const inventoryItem = userShop.inventory[product_id];
@@ -52,9 +55,12 @@ class PaymentController {
           { uuid: product_id },
           { $inc: { amount_sold: quantity } } // Increment the amount sold by the quantity purchased
         );
+
+        // Calculate total price for the order
+        totalPrice += productDetails.price * quantity; // Add the price of the product times its quantity
       }
 
-      // Create an order with the details of the purchase and set initial status to 'ordered'
+      // Create an order with the details of the purchase, including total price and initial status
       const newOrder = {
         uuid: uuidv4(),
         user: userCart.user,
@@ -62,7 +68,8 @@ class PaymentController {
         address: shipping_address, // Use the provided shipping address
         date: new Date().toISOString(),
         shop: userShop.uuid,
-        status: 'ordered' // Initial status
+        status: 'ordered', // Initial status
+        price: totalPrice // Add total price to the order
       };
       const createdOrder = await Order.create(newOrder);
 
